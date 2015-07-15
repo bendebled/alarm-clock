@@ -3,11 +3,9 @@
 #include <DS1307RTC.h>
 #include <EEPROM.h>
 #include <SPI.h>
-#include "LedControl.h"
 #include <CapacitiveSensor.h>
 #include "ClickButton.h"
-#include <SDsimple.h>
-#include <TMRpcm.h> 
+#include "Tlc5940.h"
 
 // Pins
 #define SCREEN_SWITCH_PIN 22
@@ -86,11 +84,7 @@ int nmbCapTouch = 0;
 long lastCapTouch = 0;
 int oldValCap = 0;
 long bTimeCap = 0;
-LedControl lc=LedControl(MOSI,SCK,DISPLAY_PIN,1);
 CapacitiveSensor   cs_4_2 = CapacitiveSensor(SNOOZE_SEND,SNOOZE_RECEIVE);
-TMRpcm tmrpcm; 
-File root;
-File entry;
 
 void setup() {
   Serial.begin(9600);
@@ -117,36 +111,19 @@ void setup() {
   Serial.println("Relay Inizialized");
   
   // Initialize 7 segments display
-  unsigned long delaytime=250;
-  lc.shutdown(0,false);
-  lc.setIntensity(0,7);
-  lc.clearDisplay(0);
-  lc.setLed(0,2,0,true);
-  delay(1000);
-  Serial.println("Display Inizialized");
+  Tlc.init();
 
   // Initialize DS1307
-  setSyncProvider(RTC.get);
-  setSyncInterval(3600);
-  tmElements_t tm;
-  while(!RTC.read(tm)){;}
-  setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
-  Serial.println("DS1307 Inizialized");
-  
+//  setSyncProvider(RTC.get);
+//  setSyncInterval(3600);
+//  tmElements_t tm;
+//  while(!RTC.read(tm)){;}
+//  setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
+//  Serial.println("DS1307 Inizialized");
+  setTime(5, 52,0, 15, 7, 2015);
   // Initialize Capacitive stuff
   cs_4_2.set_CS_AutocaL_Millis(0xFFFFFFFF);
   Serial.println("Capacitive Sensor Inizialized");
-  
-  // Initialize Sound
-  /*pinMode(SD_SS, OUTPUT);
-  if (!SD.begin(SD_SS,SPI_QUARTER_SPEED)) {
-    Serial.println("Failed initizalizing SD");
-  }
-  tmrpcm.speakerPin = 11;
-  root = SD.open("/");
-  tmrpcm.volume(0);
-  tmrpcm.play("TRACK001.WAV");
-  Serial.println("Sound Inizialized");*/
 }
 
 void loop(){
@@ -306,7 +283,7 @@ void loop(){
   }
   turnLed();
   displayer();
-  lc.setIntensity(0, getRoomBrightness());
+//  lc.setIntensity(0, getRoomBrightness());
   delay(50);
   
 }
@@ -343,42 +320,17 @@ void setLedBrightness(float ledBrightness){
 void displayer(){
   Serial.println("displayer");
   if(getState() == TIME_STATE){
-    if(hour()/10 == 0){
-      lc.setChar(0,3,' ',false);
-    }
-    else{
-      lc.setDigit(0,3,(byte)(hour()/10),false);
-    }
-    lc.setDigit(0,2,(byte)(hour()%10),true);
-    lc.setDigit(0,1,(byte)(minute()/10),false);
-    lc.setDigit(0,0,(byte)(minute()%10),false);
+    Tlc.setDigits(hour()/10,hour()%10,minute()/10,minute()%10,false, true, false, false, 500);
   }
   else if(getState() == ALARM1_STATE){
-    if(alarm1.Hour/10 == 0){
-      Serial.println("in if");
-      lc.setChar(0,3,' ',false);
-    }
-    else{
-      lc.setDigit(0,3,(byte)(alarm1.Hour/10),false);
-    }
-    lc.setDigit(0,2,(byte)(alarm1.Hour%10),true);
-    lc.setDigit(0,1,(byte)(alarm1.Minute/10),false);
-    lc.setDigit(0,0,(byte)(alarm1.Minute%10),false);
+    Tlc.setDigits(alarm1.Hour/10,alarm1.Hour%10,alarm1.Minute/10,alarm1.Minute%10,false, true, false, false, 50);
   }
   else{
     int timeInMinToDisplay = alarm2.Hour*60 + alarm2.Minute - (hour()*60 + minute());
     int timeInMinToDisplayHour = timeInMinToDisplay / 60;
     int timeInMinToDisplayMinute = timeInMinToDisplay % 60;
     
-    if(timeInMinToDisplayHour/10 == 0){
-      lc.setChar(0,3,' ',false);
-    }
-    else{
-      lc.setDigit(0,3,(byte)(timeInMinToDisplayHour/10),false);
-    }
-    lc.setDigit(0,2,(byte)(timeInMinToDisplayHour%10),true);
-    lc.setDigit(0,1,(byte)(timeInMinToDisplayMinute/10),false);
-    lc.setDigit(0,0,(byte)(timeInMinToDisplayMinute%10),false);
+    Tlc.setDigits(timeInMinToDisplayHour/10,timeInMinToDisplayHour%10,timeInMinToDisplayMinute/10,timeInMinToDisplayMinute%10,false, true, false, false, 50);
   }
 }
 
