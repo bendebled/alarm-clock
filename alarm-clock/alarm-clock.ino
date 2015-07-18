@@ -283,9 +283,10 @@ void loop(){
   }
   turnLed();
   displayer();
-//  lc.setIntensity(0, getRoomBrightness());
+  Tlc.setIntensity(getRoomBrightness());
   delay(50);
-  
+  Tlc.updateDigits();
+  Serial.println(getRoomBrightness());
 }
 
 void turnLed(){
@@ -318,19 +319,18 @@ void setLedBrightness(float ledBrightness){
 }
 
 void displayer(){
-  Serial.println("displayer");
   if(getState() == TIME_STATE){
     Tlc.setDigits(hour()/10,hour()%10,minute()/10,minute()%10,false, true, false, false, 500);
   }
   else if(getState() == ALARM1_STATE){
-    Tlc.setDigits(alarm1.Hour/10,alarm1.Hour%10,alarm1.Minute/10,alarm1.Minute%10,false, true, false, false, 50);
+    Tlc.setDigits(alarm1.Hour/10,alarm1.Hour%10,alarm1.Minute/10,alarm1.Minute%10,false, true, false, false, 500);
   }
   else{
     int timeInMinToDisplay = alarm2.Hour*60 + alarm2.Minute - (hour()*60 + minute());
     int timeInMinToDisplayHour = timeInMinToDisplay / 60;
     int timeInMinToDisplayMinute = timeInMinToDisplay % 60;
     
-    Tlc.setDigits(timeInMinToDisplayHour/10,timeInMinToDisplayHour%10,timeInMinToDisplayMinute/10,timeInMinToDisplayMinute%10,false, true, false, false, 50);
+    Tlc.setDigits(timeInMinToDisplayHour/10,timeInMinToDisplayHour%10,timeInMinToDisplayMinute/10,timeInMinToDisplayMinute%10,false, true, false, false, 500);
   }
 }
 
@@ -391,27 +391,26 @@ int getCapacitiveStatus(){
   return ret;
 }
 
-int getRoomBrightness(){
+float getRoomBrightness(){
   // Values read from the ldr are from 350 to 750
   // if the value read is 350, we return 15
   // if the value read is 750, we return 1
-  int fine = 5;
   int val = analogRead(A0);
   if (val <= 350) {return 15;}
-  else if (val <= 325) {return 14+fine;}
-  else if (val <= 350) {return 13+fine;}
-  else if (val <= 375) {return 12+fine;}
-  else if (val <= 400) {return 11+fine;}
-  else if (val <= 425) {return 10+fine;}
-  else if (val <= 450) {return 9+fine;}
-  else if (val <= 475) {return 8+fine;}
-  else if (val <= 500) {return 7+fine;}
-  else if (val <= 525) {return 6+fine;}
-  else if (val <= 550) {return 5+fine;}
-  else if (val <= 575) {return 4+fine;}
-  else if (val <= 600) {return 3+fine;}
-  else if (val <= 625) {return 2+fine;}
-  else {return 1+fine;}
+  else if (val <= 325) {return 1;}
+  else if (val <= 350) {return 0.9;}
+  else if (val <= 375) {return 0.8;}
+  else if (val <= 400) {return 0.7;}
+  else if (val <= 425) {return 0.6;}
+  else if (val <= 450) {return 0.5;}
+  else if (val <= 475) {return 0.4;}
+  else if (val <= 500) {return 0.3;}
+  else if (val <= 525) {return 0.2;}
+  else if (val <= 550) {return 0.1;}
+  else if (val <= 575) {return 0.08;}
+  else if (val <= 600) {return 0.06;}
+  else if (val <= 625) {return 0.04;}
+  else {return 0.01;}
   
   /*int res = int(abs(val-350-400)/26.66);
   return res;*/
