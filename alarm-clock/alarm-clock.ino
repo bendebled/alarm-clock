@@ -2,7 +2,6 @@
 #include <Time.h>
 #include <DS1307RTC.h>
 #include <EEPROM.h>
-#include <SPI.h>
 #include <CapacitiveSensor.h>
 #include "ClickButton.h"
 #include "Tlc5940.h"
@@ -17,7 +16,6 @@
 #define ALARM_SWITCH_PIN 34
 #define ALARM2_PIN 36
 #define ALARM1_PIN 38
-#define LED_BRIGHTNESS_PIN 42
 #define LED_RELAY_5V_PIN 41
 #define LED_RELAY_220V_PIN 40
 #define SOUND_RELAY_PIN 12
@@ -77,9 +75,10 @@ tmElements_t alarm1 = loadAlarm1FromEEPROM();
 tmElements_t alarm2 = loadAlarm2FromEEPROM();
 tmElements_t alarm1Snooze;
 int currentDisplay = getState();
-float ledBrightness=0;
-int alarm1State=ALARM_OFF;
-int alarm2State=ALARM_OFF;
+float oldLedBrightness = 0;
+float ledBrightness = 0;
+int alarm1State = ALARM_OFF;
+int alarm2State = ALARM_OFF;
 int nmbCapTouch = 0;
 long lastCapTouch = 0;
 int oldValCap = 0;
@@ -88,7 +87,8 @@ CapacitiveSensor   cs_4_2 = CapacitiveSensor(SNOOZE_SEND,SNOOZE_RECEIVE);
 
 void setup() {
   Serial.begin(9600);
-    
+  Serial2.begin(9600);
+  
   //Initizalize input/output :
   pinMode(SCREEN_SWITCH_PIN, INPUT);
   pinMode(SNOOZE_PIN, INPUT);
@@ -101,7 +101,6 @@ void setup() {
   pinMode(ALARM1_PIN, INPUT);
   pinMode(LED_RELAY_220V_PIN, OUTPUT);
   pinMode(LED_RELAY_5V_PIN, OUTPUT);
-  pinMode(LED_BRIGHTNESS_PIN, OUTPUT);
   pinMode(LIGHT_SENSOR_PIN, INPUT);
   Serial.println("Input/Output Inizialized");
   
@@ -114,13 +113,13 @@ void setup() {
   Tlc.init();
 
   // Initialize DS1307
-//  setSyncProvider(RTC.get);
-//  setSyncInterval(3600);
-//  tmElements_t tm;
-//  while(!RTC.read(tm)){;}
-//  setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
-//  Serial.println("DS1307 Inizialized");
-  setTime(5, 52,0, 15, 7, 2015);
+  setSyncProvider(RTC.get);
+  setSyncInterval(3600);
+  tmElements_t tm;
+  while(!RTC.read(tm)){Serial.print(".");}
+  setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
+  Serial.println("DS1307 Inizialized");
+  //setTime(5, 52,0, 15, 7, 2015);
   // Initialize Capacitive stuff
   cs_4_2.set_CS_AutocaL_Millis(0xFFFFFFFF);
   Serial.println("Capacitive Sensor Inizialized");
@@ -128,7 +127,6 @@ void setup() {
 
 void loop(){
   t = now();
-  
    // If in Time mode
   if (getState() == TIME_STATE){
     //Check if Vol+ button is pressed
@@ -281,41 +279,24 @@ void loop(){
     // play sound + turn on slighly led
     // IF SNOOZE BUTTON ACTIVATED ==> ALARM IN SNOOZE MODE
   }
-  turnLed();
+  setLedBrightness();
   displayer();
   Tlc.setIntensity(getRoomBrightness());
   delay(50);
   Tlc.updateDigits();
-  Serial.println(getRoomBrightness());
 }
 
-void turnLed(){
-  if (ledBrightness == 0){
-    digitalWrite(LED_RELAY_220V_PIN, HIGH);
+void setLedBrightness(){
+  //if(ledBrightness != oldLedBrightness){
+    Serial2.print("1,");
+    Serial2.println(ledBrightness*255);
+    oldLedBrightness = ledBrightness;
+    Serial.println(ledBrightness);
+  //}
+  if(ledBrightness > 0){
+    Serial2.println("0,1");
+    Serial.println("turning on");
   }
-  else{
-    digitalWrite(LED_RELAY_220V_PIN, LOW);
-    setLedBrightness(ledBrightness);
-  }
-  if (ledBrightness >= 0.1){
-    digitalWrite(LED_RELAY_5V_PIN, LOW);
-  }
-  else{
-    digitalWrite(LED_RELAY_5V_PIN, HIGH);
-  }
-}
-
-void setLedBrightness(float ledBrightness){
-  int value = ledBrightness*40;
-  if (value >= 40){
-    value = 255;
-  }
-  SPI.begin();
-  digitalWrite(LED_BRIGHTNESS_PIN, LOW);
-  SPI.transfer(0x11);
-  SPI.transfer(value);
-  digitalWrite(LED_BRIGHTNESS_PIN, HIGH);
-  SPI.end();
 }
 
 void displayer(){
