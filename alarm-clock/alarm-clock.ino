@@ -287,15 +287,10 @@ void loop(){
 }
 
 void setLedBrightness(){
-  //if(ledBrightness != oldLedBrightness){
+  if(ledBrightness != oldLedBrightness){
     Serial2.print("1,");
-    Serial2.println(ledBrightness*255);
+    Serial2.println(int(ledBrightness*255));
     oldLedBrightness = ledBrightness;
-    Serial.println(ledBrightness);
-  //}
-  if(ledBrightness > 0){
-    Serial2.println("0,1");
-    Serial.println("turning on");
   }
 }
 

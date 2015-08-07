@@ -43,17 +43,32 @@ void loop() {
 void doAction(byte key, byte value){
   if(key == 0){
       if(value == 0 && psuOn){
-        digitalWrite(PSU_PIN, HIGH);
+        turnPSU(false);
       }
       else if (value == 1 && !psuOn){
-        digitalWrite(PSU_PIN, LOW);
-        delay(100);
-        digitalWrite(PSU_PIN, HIGH);
-        delay(100);
-        digitalWrite(PSU_PIN, LOW);
+        turnPSU(true);
       }
   }
   else if(key == 1){
+    if(value > 0 && !psuOn){
+      turnPSU(true);
+    }
     analogWrite(LED_PIN, value);
   }
 }
+
+void turnPSU(bool on){
+  if(on){
+    digitalWrite(PSU_PIN, LOW);
+    delay(100);
+    digitalWrite(PSU_PIN, HIGH);
+    delay(100);
+    digitalWrite(PSU_PIN, LOW);
+    psuOn = true;
+  }
+  else{
+    digitalWrite(PSU_PIN, HIGH);
+    psuOn = false;
+  }
+}
+
