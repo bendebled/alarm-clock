@@ -230,9 +230,10 @@ void loop(){
   }
   
   // Eventually trigger ALARM 1
-  if ( alarm1State == ALARM_OFF && (alarm1.Hour*60 + alarm1.Minute - PROGRESSIVE_WAKE_UP_TIME  == hour()*60 + minute()) && second() < ALARM_SECOND){
+  if ( alarm1State == ALARM_OFF && (alarm1.Hour*60 + alarm1.Minute  == ((hour()*60 + minute() + PROGRESSIVE_WAKE_UP_TIME) % (24*60))) && second() < ALARM_SECOND){
     alarm1State = ALARM_PREON;
     Serial.println("Alarm 1 pre on activated");
+    Serial2.println("2,0");
   }
   if ( alarm1State == ALARM_PREON && alarm1.Hour == hour() && alarm1.Minute == minute() && second() < ALARM_SECOND) { 
     alarm1State = ALARM_ON;
@@ -254,8 +255,9 @@ void loop(){
   
   if (alarm1State == ALARM_PREON){
     ledBrightness = ( (hour()*60 + minute() - (alarm1.Hour * 60 + alarm1.Minute - PROGRESSIVE_WAKE_UP_TIME) ) / float(PROGRESSIVE_WAKE_UP_TIME));
+    Serial.print("--");
+    Serial.println(ledBrightness);
     // Start music
-    Serial.println("playing");
   }
   
   if (alarm1State == ALARM_ON){
@@ -289,7 +291,7 @@ void loop(){
 void setLedBrightness(){
   if(ledBrightness != oldLedBrightness){
     Serial2.print("1,");
-    Serial2.println(int(ledBrightness*255));
+    Serial2.println(int(255-ledBrightness*255));
     oldLedBrightness = ledBrightness;
   }
 }

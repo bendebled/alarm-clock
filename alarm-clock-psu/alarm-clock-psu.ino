@@ -9,11 +9,10 @@ bool psuOn = false;
 
 void setup() {
   Serial.begin(9600);
-
   pinMode(PSU_PIN, OUTPUT);
   digitalWrite(PSU_PIN, HIGH);
   pinMode(LED_PIN, OUTPUT);
-  digitalWrite(PSU_PIN, LOW);
+  //analogWrite(LED_PIN, 255);
 }
 
 void loop() {
@@ -50,10 +49,13 @@ void doAction(byte key, byte value){
       }
   }
   else if(key == 1){
-    if(value > 0 && !psuOn){
+    if(value < 255 && !psuOn){
       turnPSU(true);
     }
     analogWrite(LED_PIN, value);
+  }
+  else if(key == 2){
+    Serial.println(value);
   }
 }
 
