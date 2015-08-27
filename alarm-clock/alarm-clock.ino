@@ -27,6 +27,7 @@
 #define LIGHT_SENSOR_PIN A0
 #define SD_SS 4
 #define SOUND_PIN 11
+#define FAN_PIN 2
 
 // Constants
 #define TIME_BEFORE_SAVING_ALARM 3 //in seconds
@@ -90,6 +91,7 @@ void setup() {
   Serial2.begin(9600);
   
   //Initizalize input/output :
+  pinMode(FAN_PIN, OUTPUT);
   pinMode(SCREEN_SWITCH_PIN, INPUT);
   pinMode(SNOOZE_PIN, INPUT);
   pinMode(TIMER_PIN, INPUT);
@@ -101,12 +103,14 @@ void setup() {
   pinMode(ALARM1_PIN, INPUT);
   pinMode(LED_RELAY_220V_PIN, OUTPUT);
   pinMode(LED_RELAY_5V_PIN, OUTPUT);
+  pinMode(LED_RELAY_5V_PIN, OUTPUT);
   pinMode(LIGHT_SENSOR_PIN, INPUT);
   Serial.println("Input/Output Inizialized");
   
   // Initialize relay
   digitalWrite(LED_RELAY_220V_PIN, HIGH);
   digitalWrite(LED_RELAY_5V_PIN, HIGH);
+  digitalWrite(FAN_PIN, LOW);
   Serial.println("Relay Inizialized");
   
   // Initialize 7 segments display
@@ -123,6 +127,9 @@ void setup() {
   // Initialize Capacitive stuff
   cs_4_2.set_CS_AutocaL_Millis(0xFFFFFFFF);
   Serial.println("Capacitive Sensor Inizialized");
+
+  pinMode(3,OUTPUT);
+  digitalWrite(3, LOW);
 }
 
 void loop(){
@@ -233,7 +240,8 @@ void loop(){
   if ( alarm1State == ALARM_OFF && (alarm1.Hour*60 + alarm1.Minute  == ((hour()*60 + minute() + PROGRESSIVE_WAKE_UP_TIME) % (24*60))) && second() < ALARM_SECOND){
     alarm1State = ALARM_PREON;
     Serial.println("Alarm 1 pre on activated");
-    Serial2.println("2,0");
+    Serial2.println("2,0"); //Turn on wake up music
+    digitalWrite(FAN_PIN, HIGH);
   }
   if ( alarm1State == ALARM_PREON && alarm1.Hour == hour() && alarm1.Minute == minute() && second() < ALARM_SECOND) { 
     alarm1State = ALARM_ON;
