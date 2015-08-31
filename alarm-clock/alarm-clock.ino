@@ -262,9 +262,7 @@ void loop(){
   }
   
   if (alarm1State == ALARM_PREON){
-    ledBrightness = ( (hour()*60 + minute() - (alarm1.Hour * 60 + alarm1.Minute - PROGRESSIVE_WAKE_UP_TIME) ) / float(PROGRESSIVE_WAKE_UP_TIME));
-    Serial.print("--");
-    Serial.println(ledBrightness);
+    ledBrightness = ( (hour()*3600 + minute()*60 + second() - (alarm1.Hour * 3600 + alarm1.Minute*60 - PROGRESSIVE_WAKE_UP_TIME*60) ) / float(PROGRESSIVE_WAKE_UP_TIME*60));
     // Start music
   }
   
@@ -300,6 +298,7 @@ void setLedBrightness(){
   if(ledBrightness != oldLedBrightness){
     Serial2.print("1,");
     Serial2.println(int(255-ledBrightness*255));
+    Serial.println(int(255-ledBrightness*255));
     oldLedBrightness = ledBrightness;
   }
 }
