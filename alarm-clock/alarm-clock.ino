@@ -237,7 +237,7 @@ void loop(){
   }
   
   // Eventually trigger ALARM 1
-  if ( alarm1State == ALARM_OFF && (alarm1.Hour*60 + alarm1.Minute  == ((hour()*60 + minute() + PROGRESSIVE_WAKE_UP_TIME) % (24*60))) && second() < ALARM_SECOND){
+  if ( alarm1State == ALARM_OFF && intervalLess(hour()*60 + minute(), alarm1.Hour*60 + alarm1.Minute, PROGRESSIVE_WAKE_UP_TIME) && second() < ALARM_SECOND){
     alarm1State = ALARM_PREON;
     Serial.println("Alarm 1 pre on activated");
     Serial2.println("2,0"); //Turn on wake up music
@@ -400,3 +400,13 @@ float getRoomBrightness(){
   /*int res = int(abs(val-350-400)/26.66);
   return res;*/
 }
+
+//All units are in minutes
+//return true if t2-t1 < interval
+bool intervalLess(int t1, int t2, int interval){
+  if(t2 < interval){
+    t2 += 1440; // = 24 hours * 60 minutes
+  }
+  return (t2 - t1) <= interval
+}
+
