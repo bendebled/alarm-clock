@@ -407,6 +407,6 @@ bool intervalLess(int t1, int t2, int interval){
   if(t2 < interval){
     t2 += 1440; // = 24 hours * 60 minutes
   }
-  return (t2 - t1) <= interval
+  return (t2 - t1) <= interval;
 }
 

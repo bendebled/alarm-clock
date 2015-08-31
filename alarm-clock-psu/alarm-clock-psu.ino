@@ -28,6 +28,7 @@ void setup() {
   digitalWrite(PSU_PIN, HIGH);
   
   pinMode(LED_PIN, OUTPUT);
+  analogWrite(LED_PIN, 255);
   
   pinMode(RPI_PIN, OUTPUT);
   digitalWrite(RPI_PIN,HIGH);
