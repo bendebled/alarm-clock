@@ -295,10 +295,9 @@ void loop(){
 }
 
 void setLedBrightness(){
-  if(ledBrightness != oldLedBrightness){
+  if(int(255-ledBrightness*255) != int(255-oldLedBrightness*255)){
     Serial2.print("1,");
     Serial2.println(int(255-ledBrightness*255));
-    Serial.println(int(255-ledBrightness*255));
     oldLedBrightness = ledBrightness;
   }
 }
