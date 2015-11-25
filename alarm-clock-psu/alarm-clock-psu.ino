@@ -13,6 +13,7 @@ unsigned long failSafeTime = 0;
 #define PSU_PIN 2
 #define LED_PIN 3
 #define RPI_PIN 4
+#define SPEAKER_220_PIN 5
 #define BUZZER_PIN 6
 
 SoftwareSerial rPiSerial(10, 11); // RX, TX
@@ -32,6 +33,9 @@ void setup() {
   
   pinMode(RPI_PIN, OUTPUT);
   digitalWrite(RPI_PIN,HIGH);
+
+  pinMode(SPEAKER_220_PIN, OUTPUT);
+  digitalWrite(SPEAKER_220_PIN,HIGH);
 
   pinMode(BUZZER_PIN, OUTPUT);
   digitalWrite(BUZZER_PIN, LOW);
@@ -105,10 +109,12 @@ void turnRPi(bool on){
     delay(1000);
   }
   if(on){
+    digitalWrite(SPEAKER_220_PIN, LOW);
     digitalWrite(RPI_PIN, LOW);
     rPiOn = true;
   }
   else{
+    digitalWrite(SPEAKER_220_PIN, HIGH);
     digitalWrite(RPI_PIN, HIGH);
     rPiOn = false;
   }
