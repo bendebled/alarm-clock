@@ -86,9 +86,15 @@ int oldValCap = 0;
 long bTimeCap = 0;
 CapacitiveSensor   cs_4_2 = CapacitiveSensor(SNOOZE_SEND,SNOOZE_RECEIVE);
 
+//Terminal
+bool debug = true;
+String inputString = "";
+
+
 void setup() {
   Serial.begin(9600);
   Serial2.begin(9600);
+  Serial3.begin(9600);
   
   //Initizalize input/output :
   pinMode(FAN_PIN, OUTPUT);
@@ -130,6 +136,9 @@ void setup() {
 
   pinMode(3,OUTPUT);
   digitalWrite(3, LOW);
+
+  //Init terminal
+  inputString.reserve(200);
 }
 
 void loop(){
@@ -292,6 +301,8 @@ void loop(){
   Tlc.setIntensity(getRoomBrightness());
   delay(50);
   Tlc.updateDigits();
+
+  terminal();
 }
 
 void setLedBrightness(){
@@ -403,9 +414,55 @@ float getRoomBrightness(){
 //All units are in minutes
 //return true if t2-t1 < interval
 bool intervalLess(int t1, int t2, int interval){
-  if(t2 < interval){
+  if(t2 < t1){
     t2 += 1440; // = 24 hours * 60 minutes
   }
   return (t2 - t1) <= interval;
 }
 
+
+void terminal(){
+  bool stringComplete = false;
+  while (Serial3.available()) {
+    char inChar = (char)Serial3.read();
+    inputString += inChar;
+  }
+
+  if(inputString.startsWith("help")){
+    Serial3.println("Terminal help");
+    Serial3.println("--------------");
+    Serial3.println("help");
+    Serial3.println("status");
+    Serial3.println("set time yyyy-mm-dd-hh-mm");
+    Serial3.println("set debug true/false");
+    Serial3.println();
+  }
+  
+  else if(inputString.startsWith("set time")){
+    int Y = inputString.substring(9,13).toInt();
+    int M = inputString.substring(14,16).toInt();
+    int D = inputString.substring(17,19).toInt();
+    int h = inputString.substring(20,22).toInt();
+    int m = inputString.substring(23,25).toInt();
+    Serial3.println("Setting time to : "+String(Y)+"-"+String(M)+"-"+String(D)+" "+String(h)+":"+String(m));
+    setTime(h, m, 0, D, M, Y);
+    RTC.set(now());
+  }
+
+  else if(inputString.startsWith("set debug")){
+    if(inputString.startsWith("set debug true"){
+      debug = true;
+      Serial3.println("Debug : on");
+    }
+    else if(inputString.startsWith("set debug false")){
+      debug = false;
+      Serial3.println("Debug : off");
+    }
+    else{
+      Serial3.println("Error, please provide argument \"true\" or \"false\"");
+    }
+  }
+  
+  inputString = "";
+
+}
